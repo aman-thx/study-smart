@@ -288,7 +288,7 @@ git push
 
 ## 📧 Contact
 
-- **GitHub:** [@yourusername](https://github.com/yourusername)
+- **GitHub:** [@yourusername](https://github.com/aman-thx)
 - **Live App:** [study-smart-zeta.vercel.app](https://study-smart-zeta.vercel.app)
 
 ---

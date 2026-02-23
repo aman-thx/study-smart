@@ -9,28 +9,37 @@ export default function CourseDetailsModal({ course, isOpen, onClose, onUpdate }
   const [editingGrade, setEditingGrade] = useState({ id: null, value: '' })
 
   useEffect(() => {
+    let isMounted = true
+
+    async function fetchAssignments() {
+      if (!course?.id) return
+      
+      setLoading(true)
+      try {
+        const { data, error } = await supabase
+          .from('assignments')
+          .select('*')
+          .eq('course_id', course.id)
+          .order('created_at', { ascending: true })
+
+        if (!error && isMounted) {
+          setAssignments(data || [])
+        }
+      } catch (error) {
+        console.error('Error fetching assignments:', error)
+      } finally {
+        if (isMounted) setLoading(false)
+      }
+    }
+
     if (isOpen && course) {
       fetchAssignments()
     }
-  }, [isOpen, course])
 
-  async function fetchAssignments() {
-    try {
-      const { data, error } = await supabase
-        .from('assignments')
-        .select('*')
-        .eq('course_id', course.id)
-        .order('created_at', { ascending: true })
-
-      if (!error) {
-        setAssignments(data || [])
-      }
-    } catch (error) {
-      console.error('Error fetching assignments:', error)
-    } finally {
-      setLoading(false)
+    return () => {
+      isMounted = false
     }
-  }
+  }, [isOpen, course])
 
   const validateGrade = (grade, maxScore) => {
     if (grade === '') return { valid: true }
@@ -91,6 +100,7 @@ export default function CourseDetailsModal({ course, isOpen, onClose, onUpdate }
     if (onUpdate) onUpdate()
   }
 
+  // Calculate totals exactly as shown in your screenshot
   const totalAllocated = assignments.reduce((sum, a) => sum + (a.max_grade || 0), 0)
   const totalEarned = assignments.reduce((sum, a) => sum + (a.grade || 0), 0)
   const remainingAllocation = Math.max(0, 100 - totalAllocated)
@@ -110,19 +120,17 @@ export default function CourseDetailsModal({ course, isOpen, onClose, onUpdate }
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
         <div className="relative w-full max-w-2xl bg-white rounded-lg shadow-xl">
-          {/* Header */}
+          {/* Header - Matches your screenshot style */}
           <div className="flex justify-between items-center p-6 border-b">
             <div>
-              <h2 className="text-2xl font-bold text-gray-800">{course.name}</h2>
-              {course.code && (
-                <p className="text-sm text-gray-500">{course.code} • {course.credits} credits</p>
-              )}
+              <h2 className="text-2xl font-bold text-gray-800">{course?.name}</h2>
+              <p className="text-sm text-gray-500">{course?.code} • {course?.credits} credits</p>
             </div>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition"
+              className="text-gray-400 hover:text-gray-600 text-3xl"
             >
-              <span className="text-3xl">&times;</span>
+              &times;
             </button>
           </div>
 
@@ -134,7 +142,7 @@ export default function CourseDetailsModal({ course, isOpen, onClose, onUpdate }
               </div>
             )}
 
-            {/* Course Summary */}
+            {/* Course Grade - Matches your screenshot exactly */}
             <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm font-medium text-gray-700">Course Grade:</span>
@@ -143,6 +151,7 @@ export default function CourseDetailsModal({ course, isOpen, onClose, onUpdate }
                 </span>
               </div>
 
+              {/* Progress Bar */}
               <div className="w-full bg-gray-200 rounded-full h-3 mb-3">
                 <div
                   className="bg-blue-600 rounded-full h-3 transition-all duration-300"
@@ -150,6 +159,7 @@ export default function CourseDetailsModal({ course, isOpen, onClose, onUpdate }
                 />
               </div>
 
+              {/* Points Display - Exactly as shown in your screenshot */}
               <div className="grid grid-cols-3 gap-2 text-xs text-center">
                 <div className="bg-white p-2 rounded">
                   <span className="block font-bold text-blue-600">{totalEarned.toFixed(1)}</span>
@@ -267,7 +277,7 @@ export default function CourseDetailsModal({ course, isOpen, onClose, onUpdate }
               </div>
             )}
 
-            {/* Add Assignment */}
+            {/* Add Assignment Button - Matches your screenshot */}
             {courseFullyAllocated ? (
               <div className="mt-4">
                 <button
@@ -282,7 +292,7 @@ export default function CourseDetailsModal({ course, isOpen, onClose, onUpdate }
               </div>
             ) : (
               <AddAssignmentForm
-                courseId={course.id}
+                courseId={course?.id}
                 remainingAllocation={remainingAllocation}
                 onAssignmentAdded={handleAssignmentAdded}
               />

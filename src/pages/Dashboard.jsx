@@ -49,7 +49,8 @@ export default function Dashboard() {
 
   const handleSignOut = async () => {
     await signOut()
-    navigate('/')
+    // Replace the entire history so user can't go back
+    navigate('/', { replace: true })
   }
 
   const handleCourseAdded = (newCourse) => {

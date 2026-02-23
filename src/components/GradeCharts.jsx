@@ -6,12 +6,30 @@ export default function GradeCharts({ courses, refreshTrigger }) {
   const [loading, setLoading] = useState(true)
   const [viewMode, setViewMode] = useState('bar')
 
+  // Letter grade function matching your scale
+  const getLetterGrade = (percentage) => {
+    if (percentage >= 90) return 'A+'
+    if (percentage >= 85) return 'A'
+    if (percentage >= 80) return 'A-'
+    if (percentage >= 75) return 'B+'
+    if (percentage >= 70) return 'B'
+    if (percentage >= 65) return 'B-'
+    if (percentage >= 60) return 'C+'
+    if (percentage >= 50) return 'C'
+    if (percentage >= 45) return 'C-'
+    if (percentage >= 40) return 'D'
+    return 'F'
+  }
+
   useEffect(() => {
     let isMounted = true
 
     async function fetchGradeData() {
       if (!courses || courses.length === 0) {
-        if (isMounted) setLoading(false)
+        if (isMounted) {
+          setChartData([])
+          setLoading(false)
+        }
         return
       }
 
@@ -35,7 +53,7 @@ export default function GradeCharts({ courses, refreshTrigger }) {
               credits: course.credits,
               earned: totalEarned,
               allocated: totalAllocated,
-              color: getColorForPercentage(percentage)
+              grade: getLetterGrade(percentage)
             })
           }
         }
@@ -58,28 +76,36 @@ export default function GradeCharts({ courses, refreshTrigger }) {
   }, [courses, refreshTrigger])
 
   const getColorForPercentage = (percentage) => {
-    if (percentage >= 90) return '#22c55e'
-    if (percentage >= 80) return '#3b82f6'
-    if (percentage >= 70) return '#eab308'
-    if (percentage >= 60) return '#f97316'
-    return '#ef4444'
+    if (percentage >= 90) return '#22c55e' // green
+    if (percentage >= 80) return '#3b82f6' // blue
+    if (percentage >= 70) return '#eab308' // yellow
+    if (percentage >= 60) return '#f97316' // orange
+    if (percentage >= 50) return '#f97316' // orange
+    if (percentage >= 45) return '#ef4444' // red
+    if (percentage >= 40) return '#ef4444' // red
+    return '#ef4444' // red
   }
 
   const getPieChartData = () => {
     const distribution = {
-      A: { count: 0, color: '#22c55e', label: 'A (90-100%)' },
-      B: { count: 0, color: '#3b82f6', label: 'B (80-89%)' },
-      C: { count: 0, color: '#eab308', label: 'C (70-79%)' },
-      D: { count: 0, color: '#f97316', label: 'D (60-69%)' },
-      F: { count: 0, color: '#ef4444', label: 'F (0-59%)' }
+      'A+': { count: 0, color: '#22c55e', label: 'A+ (90-100]' },
+      'A': { count: 0, color: '#22c55e', label: 'A [85-90)' },
+      'A-': { count: 0, color: '#22c55e', label: 'A- [80-85)' },
+      'B+': { count: 0, color: '#3b82f6', label: 'B+ [75-80)' },
+      'B': { count: 0, color: '#3b82f6', label: 'B [70-75)' },
+      'B-': { count: 0, color: '#3b82f6', label: 'B- [65-70)' },
+      'C+': { count: 0, color: '#eab308', label: 'C+ [60-65)' },
+      'C': { count: 0, color: '#f97316', label: 'C [50-60)' },
+      'C-': { count: 0, color: '#ef4444', label: 'C- [45-50)' },
+      'D': { count: 0, color: '#ef4444', label: 'D [40-45)' },
+      'F': { count: 0, color: '#ef4444', label: 'F [0-40)' }
     }
 
     chartData.forEach(item => {
-      if (item.percentage >= 90) distribution.A.count++
-      else if (item.percentage >= 80) distribution.B.count++
-      else if (item.percentage >= 70) distribution.C.count++
-      else if (item.percentage >= 60) distribution.D.count++
-      else distribution.F.count++
+      const grade = getLetterGrade(item.percentage)
+      if (distribution[grade]) {
+        distribution[grade].count++
+      }
     })
 
     return distribution
@@ -128,6 +154,10 @@ export default function GradeCharts({ courses, refreshTrigger }) {
   const pieSegments = calculatePieSegments()
   const pieData = getPieChartData()
 
+  if (!courses || courses.length === 0) {
+    return null
+  }
+
   if (loading) {
     return (
       <div className="bg-white rounded-lg shadow p-6 mb-6">
@@ -139,7 +169,7 @@ export default function GradeCharts({ courses, refreshTrigger }) {
   if (chartData.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow p-6 mb-6 text-center">
-        <p className="text-gray-500">Add courses and grades to see charts</p>
+        <p className="text-gray-500">Add assignments to courses to see charts</p>
       </div>
     )
   }
@@ -180,14 +210,28 @@ export default function GradeCharts({ courses, refreshTrigger }) {
             <div key={index} className="space-y-1">
               <div className="flex justify-between text-sm">
                 <span className="font-medium text-gray-700">{item.name}</span>
-                <span className="text-gray-600">{item.percentage.toFixed(1)}%</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-600">{item.percentage.toFixed(1)}%</span>
+                  <span className={`px-2 py-0.5 text-xs font-bold rounded ${
+                    item.percentage >= 90 ? 'bg-green-100 text-green-700' :
+                    item.percentage >= 80 ? 'bg-blue-100 text-blue-700' :
+                    item.percentage >= 70 ? 'bg-yellow-100 text-yellow-700' :
+                    item.percentage >= 60 ? 'bg-orange-100 text-orange-700' :
+                    item.percentage >= 50 ? 'bg-orange-100 text-orange-700' :
+                    item.percentage >= 45 ? 'bg-red-100 text-red-600' :
+                    item.percentage >= 40 ? 'bg-red-100 text-red-600' :
+                    'bg-red-100 text-red-600'
+                  }`}>
+                    {item.grade}
+                  </span>
+                </div>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-4">
                 <div 
                   className="h-4 rounded-full transition-all duration-500"
                   style={{ 
                     width: `${item.percentage}%`,
-                    backgroundColor: item.color
+                    backgroundColor: getColorForPercentage(item.percentage)
                   }}
                 ></div>
               </div>
@@ -225,7 +269,7 @@ export default function GradeCharts({ courses, refreshTrigger }) {
           </div>
 
           {/* Pie Chart Legend */}
-          <div className="flex-1 space-y-2">
+          <div className="flex-1 space-y-2 max-h-64 overflow-y-auto">
             {Object.entries(pieData).map(([grade, data]) => (
               data.count > 0 && (
                 <div key={grade} className="flex items-center justify-between">
@@ -235,7 +279,7 @@ export default function GradeCharts({ courses, refreshTrigger }) {
                   </div>
                   <div className="text-sm font-medium">
                     <span className="text-gray-900">{data.count}</span>
-                    <span className="text-gray-500 ml-1">({((data.count / chartData.length) * 100).toFixed(1)}%)</span>
+                    <span className="text-gray-500 ml-1">({data.percentage}%)</span>
                   </div>
                 </div>
               )
@@ -250,23 +294,23 @@ export default function GradeCharts({ courses, refreshTrigger }) {
           <div className="flex flex-wrap gap-4 text-xs">
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 bg-green-500 rounded"></div>
-              <span>A (90-100%)</span>
+              <span>A+, A, A- (80-100%)</span>
             </div>
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 bg-blue-500 rounded"></div>
-              <span>B (80-89%)</span>
+              <span>B+, B, B- (65-79%)</span>
             </div>
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 bg-yellow-500 rounded"></div>
-              <span>C (70-79%)</span>
+              <span>C+ (60-64%)</span>
             </div>
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 bg-orange-500 rounded"></div>
-              <span>D (60-69%)</span>
+              <span>C, C- (45-59%)</span>
             </div>
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 bg-red-500 rounded"></div>
-              <span>F (0-59%)</span>
+              <span>D, F (0-44%)</span>
             </div>
           </div>
         </div>

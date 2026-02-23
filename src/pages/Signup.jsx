@@ -37,7 +37,8 @@ export default function Signup() {
       setError(error.message)
       setLoading(false)
     } else {
-      navigate('/dashboard')
+      // Replace history so user can't go back to signup page
+      navigate('/dashboard', { replace: true })
     }
   }
 

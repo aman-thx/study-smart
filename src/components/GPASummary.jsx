@@ -8,20 +8,34 @@ export default function GPASummary({ courses, refreshTrigger }) {
   const [totalCredits, setTotalCredits] = useState(0)
   const [lastUpdated, setLastUpdated] = useState(null)
 
-  // GPA conversion scale (common 4.0 scale)
+  // GPA conversion scale - EXACTLY as you specified
   const percentageToGPA = (percentage) => {
-    if (percentage >= 93) return 4.0
-    if (percentage >= 90) return 3.7
-    if (percentage >= 87) return 3.3
-    if (percentage >= 83) return 3.0
-    if (percentage >= 80) return 2.7
-    if (percentage >= 77) return 2.3
-    if (percentage >= 73) return 2.0
-    if (percentage >= 70) return 1.7
-    if (percentage >= 67) return 1.3
-    if (percentage >= 63) return 1.0
-    if (percentage >= 60) return 0.7
-    return 0.0
+    if (percentage >= 90) return 4.0      // A+ (90-100]
+    if (percentage >= 85) return 4.0      // A [85-90)
+    if (percentage >= 80) return 3.75     // A- [80-85)
+    if (percentage >= 75) return 3.5      // B+ [75-80)
+    if (percentage >= 70) return 3.0      // B [70-75)
+    if (percentage >= 65) return 2.75     // B- [65-70)
+    if (percentage >= 60) return 2.5      // C+ [60-65)
+    if (percentage >= 50) return 2.0      // C [50-60)
+    if (percentage >= 45) return 1.75     // C- [45-50)
+    if (percentage >= 40) return 1.0      // D [40-45)
+    return 0.0                             // F [0-40)
+  }
+
+  // Letter grade function matching your scale
+  const getLetterGrade = (percentage) => {
+    if (percentage >= 90) return 'A+'
+    if (percentage >= 85) return 'A'
+    if (percentage >= 80) return 'A-'
+    if (percentage >= 75) return 'B+'
+    if (percentage >= 70) return 'B'
+    if (percentage >= 65) return 'B-'
+    if (percentage >= 60) return 'C+'
+    if (percentage >= 50) return 'C'
+    if (percentage >= 45) return 'C-'
+    if (percentage >= 40) return 'D'
+    return 'F'
   }
 
   useEffect(() => {
@@ -50,6 +64,7 @@ export default function GPASummary({ courses, refreshTrigger }) {
             const percentage = totalAllocated > 0 ? (totalEarned / totalAllocated) * 100 : 0
             
             const courseGPA = percentageToGPA(percentage)
+            const letterGrade = getLetterGrade(percentage)
             
             stats.push({
               courseId: course.id,
@@ -57,6 +72,7 @@ export default function GPASummary({ courses, refreshTrigger }) {
               credits: course.credits,
               percentage: percentage,
               gpa: courseGPA,
+              letterGrade: letterGrade,
               earned: totalEarned,
               allocated: totalAllocated
             })
@@ -156,9 +172,24 @@ export default function GPASummary({ courses, refreshTrigger }) {
                   stat.percentage >= 90 ? 'text-green-600' :
                   stat.percentage >= 80 ? 'text-blue-600' :
                   stat.percentage >= 70 ? 'text-yellow-600' :
-                  stat.percentage >= 60 ? 'text-orange-600' : 'text-red-600'
+                  stat.percentage >= 60 ? 'text-orange-600' :
+                  stat.percentage >= 50 ? 'text-orange-600' :
+                  stat.percentage >= 45 ? 'text-red-400' :
+                  stat.percentage >= 40 ? 'text-red-500' : 'text-red-600'
                 }`}>
                   {stat.percentage.toFixed(1)}%
+                </span>
+                <span className={`ml-2 px-2 py-0.5 text-xs font-bold rounded ${
+                  stat.percentage >= 90 ? 'bg-green-100 text-green-700' :
+                  stat.percentage >= 80 ? 'bg-blue-100 text-blue-700' :
+                  stat.percentage >= 70 ? 'bg-yellow-100 text-yellow-700' :
+                  stat.percentage >= 60 ? 'bg-orange-100 text-orange-700' :
+                  stat.percentage >= 50 ? 'bg-orange-100 text-orange-700' :
+                  stat.percentage >= 45 ? 'bg-red-100 text-red-600' :
+                  stat.percentage >= 40 ? 'bg-red-100 text-red-600' :
+                  'bg-red-100 text-red-600'
+                }`}>
+                  {stat.letterGrade}
                 </span>
                 <span className="ml-2 text-sm text-gray-500">
                   (GPA: {stat.gpa.toFixed(2)})
@@ -173,7 +204,10 @@ export default function GPASummary({ courses, refreshTrigger }) {
                   stat.percentage >= 90 ? 'bg-green-600' :
                   stat.percentage >= 80 ? 'bg-blue-600' :
                   stat.percentage >= 70 ? 'bg-yellow-600' :
-                  stat.percentage >= 60 ? 'bg-orange-600' : 'bg-red-600'
+                  stat.percentage >= 60 ? 'bg-orange-600' :
+                  stat.percentage >= 50 ? 'bg-orange-600' :
+                  stat.percentage >= 45 ? 'bg-red-500' :
+                  stat.percentage >= 40 ? 'bg-red-500' : 'bg-red-600'
                 }`}
                 style={{ width: `${Math.min(stat.percentage, 100)}%` }}
               ></div>
@@ -191,7 +225,7 @@ export default function GPASummary({ courses, refreshTrigger }) {
 
       {/* GPA Legend and Last Updated */}
       <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center">
-        <p className="text-xs text-gray-500">Based on standard 4.0 GPA scale</p>
+        <p className="text-xs text-gray-500">Based on your custom grading scale</p>
         {lastUpdated && (
           <p className="text-xs text-gray-400">
             Last updated: {lastUpdated.toLocaleTimeString()}

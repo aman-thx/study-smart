@@ -21,7 +21,8 @@ export default function Login() {
       setError(error.message)
       setLoading(false)
     } else {
-      navigate('/dashboard')
+      // Replace history so user can't go back to login page
+      navigate('/dashboard', { replace: true })
     }
   }
 

@@ -119,7 +119,7 @@ export default function Landing() {
           <p className="text-lg text-gray-700 italic mb-4">
             "StudySmart helped me keep track of all my courses this semester. The grade visualizer is so satisfying to watch as I complete assignments!"
           </p>
-          <p className="font-semibold">— Computer Science Student</p>
+          <p className="font-semibold">— Software Engineering student</p>
         </div>
       </div>
 

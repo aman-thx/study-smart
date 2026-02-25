@@ -220,26 +220,6 @@ studysmart/
 
 ---
 
-## 🧪 Testing Checklist
-
-- [ ] User signup with email/password
-- [ ] User login
-- [ ] Protected routes redirect to landing
-- [ ] Sign out goes to landing page
-- [ ] Add a new course
-- [ ] Edit course details
-- [ ] Delete a course
-- [ ] Add assignments to a course
-- [ ] Mark assignments complete
-- [ ] Enter grades (validation prevents exceeding max points)
-- [ ] Course grade updates in real-time
-- [ ] Overall GPA calculates correctly
-- [ ] Bar chart shows all courses
-- [ ] Pie chart shows grade distribution
-- [ ] Mobile responsive design works
-
----
-
 ## 🚢 Deployment
 
 ### Deploy to Vercel
@@ -288,7 +268,7 @@ git push
 
 ## 📧 Contact
 
-- **GitHub:** [@yourusername](https://github.com/aman-thx)
+- **GitHub:** [@aman-thx](https://github.com/aman-thx)
 - **Live App:** [study-smart-zeta.vercel.app](https://study-smart-zeta.vercel.app)
 
 ---
